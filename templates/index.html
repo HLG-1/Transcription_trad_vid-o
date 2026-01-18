@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STT + Traduction Multilingue</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .device-info {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8f9ff;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: scale(1.02);
+        }
+
+        .upload-section.dragover {
+            border-color: #48bb78;
+            background: #f0fff4;
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .upload-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .languages-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 15px;
+        }
+
+        .languages-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .language-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .language-option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .language-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-text {
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.6;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .translation-card {
+            border-left-color: #764ba2;
+        }
+
+        .processing-time {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #c53030;
+        }
+
+        .file-info {
+            display: none;
+            background: #e6fffa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #38b2ac;
+        }
+
+        .file-info p {
+            margin: 5px 0;
+            color: #234e52;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .language-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Speech-to-Text + Traduction</h1>
+            <p>Modèle Whisper Fine-tuné avec Traduction Multilingue</p>
+            <div class="device-info">
+                <span id="deviceInfo">Device: {{ device }}</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Mode selector -->
+            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
+                <button class="btn" id="mode_stt">STT + Traduction</button>
+                <button class="btn" id="mode_tts">TTS</button>
+                <button class="btn" id="mode_di">Diarization</button>
+                <button class="btn" id="mode_sent">Sentiment</button>
+            </div>
+
+            <!-- Hidden input to store mode -->
+            <input type="hidden" id="mode" value="{{ mode|default('stt') }}">
+
+            <!-- Section Upload (used by STT & Diarization) -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">🎵</div>
+                <h3>Glissez-déposez votre fichier audio</h3>
+                <p>ou cliquez pour sélectionner</p>
+                <p style="font-size: 0.9em; color: #999;">
+                    Formats supportés : WAV, MP3, FLAC, OGG, M4A (max 16 MB)
+                </p>
+                <input type="file" id="audioFile" accept=".wav,.mp3,.flac,.ogg,.m4a">
+                <button class="btn" onclick="document.getElementById('audioFile').click()">
+                    Choisir un fichier
+                </button>
+            </div>
+
+            <!-- TTS section -->
+            <div id="ttsSection" style="display:none;padding:20px;background:#f8f9ff;border-radius:12px;margin-top:20px;">
+                <h3>🗣️ Text-to-Speech (TTS)</h3>
+                <textarea id="ttsText" rows="6" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;" placeholder="Entrez le texte à synthétiser..."></textarea>
+                <div style="text-align:center;margin-top:15px;"><button class="btn" id="ttsBtn" onclick="processTTS()">🔊 Générer audio</button></div>
+                <div id="ttsResult" style="display:none;margin-top:15px;text-align:center;"></div>
+            </div>
+
+            <!-- Sentiment section -->
+            <div id="sentimentSection" style="display:none;padding:20px;background:#f8f9ff;border-radius:12px;margin-top:20px;">
+                <h3>🧠 Sentiment Analysis</h3>
+                <textarea id="sentText" rows="6" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;" placeholder="Entrez le texte pour l'analyse de sentiment..."></textarea>
+                <div style="text-align:center;margin-top:15px;"><button class="btn" id="sentBtn" onclick="processSentiment()">📊 Analyser</button></div>
+                <div id="sentResult" style="display:none;margin-top:15px;text-align:center;"></div>
+            </div>
+
+            <!-- Info fichier -->
+            <div class="file-info" id="fileInfo">
+                <p><strong>📁 Fichier :</strong> <span id="fileName"></span></p>
+                <p><strong>📊 Taille :</strong> <span id="fileSize"></span></p>
+            </div>
+
+            <!-- Sélection des langues -->
+            <div class="languages-section">
+                <h3>🌍 Sélectionnez les langues de traduction :</h3>
+                <div class="language-grid">
+                    {% for code, info in languages.items() %}
+                    <label class="language-option">
+                        <input type="checkbox" name="languages" value="{{ code }}" 
+                               {% if code == 'fr' %}checked{% endif %}>
+                        <span>{{ info.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Bouton de traitement -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn" id="processBtn" onclick="processAudio()" disabled>
+                    🚀 Transcrire et Traduire
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Traitement en cours... Veuillez patienter</p>
+            </div>
+
+            <!-- Résultats -->
+            <div class="results-section" id="results">
+                <!-- Transcription -->
+                <div class="result-card">
+                    <h3>
+                        🎤 Transcription (Anglais)
+                        <span class="processing-time" id="processingTime"></span>
+                    </h3>
+                    <div class="result-text" id="transcriptionText"></div>
+                </div>
+
+                <!-- Traductions -->
+                <div id="translationsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // Drag & Drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('audioFile');
+        const processBtn = document.getElementById('processBtn');
+        const fileInfo = document.getElementById('fileInfo');
+
+        uploadSection.addEventListener('click', () => fileInput.click());
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            if (fileInput.files.length === 0) return;
+
+            selectedFile = fileInput.files[0];
+            const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+
+            document.getElementById('fileName').textContent = selectedFile.name;
+            document.getElementById('fileSize').textContent = `${sizeMB} MB`;
+            
+            fileInfo.style.display = 'block';
+            processBtn.disabled = false;
+
+            uploadSection.querySelector('h3').textContent = '✅ Fichier sélectionné';
+            uploadSection.querySelector('.upload-icon').textContent = '✅';
+        }
+
+        async function processAudio() {
+            if (!selectedFile) {
+                alert('Veuillez sélectionner un fichier audio');
+                return;
+            }
+
+            // Récupérer les langues sélectionnées
+            const selectedLanguages = Array.from(
+                document.querySelectorAll('input[name="languages"]:checked')
+            ).map(cb => cb.value);
+
+            if (selectedLanguages.length === 0) {
+                alert('Veuillez sélectionner au moins une langue');
+                return;
+            }
+
+            // Préparer FormData
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            selectedLanguages.forEach(lang => {
+                formData.append('languages[]', lang);
+            });
+
+            // UI Loading
+            processBtn.disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur serveur');
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                processBtn.disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            // Transcription
+            document.getElementById('transcriptionText').textContent = data.transcription;
+            document.getElementById('processingTime').textContent = 
+                `⏱️ ${data.processing_time}s`;
+
+            // Traductions
+            const container = document.getElementById('translationsContainer');
+            container.innerHTML = '';
+
+            for (const [lang, translation] of Object.entries(data.translations)) {
+                const card = document.createElement('div');
+                card.className = 'result-card translation-card';
+                card.innerHTML = `
+                    <h3>🌍 Traduction (${lang.toUpperCase()})</h3>
+                    <div class="result-text">${translation}</div>
+                `;
+                container.appendChild(card);
+            }
+
+            // Afficher les résultats
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const resultsSection = document.getElementById('results');
+            resultsSection.innerHTML = `
+                <div class="error">
+                    <strong>❌ Erreur :</strong> ${message}
+                </div>
+            `;
+            resultsSection.style.display = 'block';
+        }
+
+        // Vérifier le statut au chargement
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                console.log('API Status:', data);
+            } catch (error) {
+                console.error('API non disponible:', error);
+            }
+        }
+
+        checkStatus();
+        // Mode switching
+        const modeButtons = {
+            stt: document.getElementById('mode_stt'),
+            tts: document.getElementById('mode_tts'),
+            di: document.getElementById('mode_di'),
+            sent: document.getElementById('mode_sent')
+        };
+
+        const ttsSection = document.getElementById('ttsSection');
+        const sentSection = document.getElementById('sentimentSection');
+
+        function setMode(m) {
+            document.getElementById('mode').value = m;
+            // Reset UI
+            ttsSection.style.display = m === 'tts' ? 'block' : 'none';
+            sentSection.style.display = m === 'sent' ? 'block' : 'none';
+            uploadSection.style.display = (m === 'stt' || m === 'di') ? 'block' : 'none';
+            // Update buttons style
+            Object.keys(modeButtons).forEach(k => {
+                modeButtons[k].style.opacity = (k === m) ? '1' : '0.7';
+            });
+            // Toggle process button text
+            processBtn.style.display = (m === 'stt' || m === 'di') ? 'inline-block' : 'none';
+        }
+
+        modeButtons.stt.addEventListener('click', () => setMode('stt'));
+        modeButtons.tts.addEventListener('click', () => setMode('tts'));
+        modeButtons.di.addEventListener('click', () => setMode('di'));
+        modeButtons.sent.addEventListener('click', () => setMode('sent'));
+
+        // Initialize mode from server-provided value
+        setMode(document.getElementById('mode').value || 'stt');
+
+        // TTS handler (placeholder)
+        async function processTTS() {
+            const text = document.getElementById('ttsText').value.trim();
+            if (!text) return alert('Veuillez entrer du texte pour la synthèse');
+            document.getElementById('ttsBtn').disabled = true;
+            try {
+                const resp = await fetch('/api/tts', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error||'Erreur TTS');
+                const r = document.getElementById('ttsResult');
+                r.style.display = 'block';
+                r.innerHTML = `<audio controls src="${data.audio_url || ''}">Votre navigateur ne supporte pas l'audio</audio>`;
+            } catch (e) { alert(e.message); }
+            document.getElementById('ttsBtn').disabled = false;
+        }
+
+        // Sentiment handler (placeholder)
+        async function processSentiment() {
+            const text = document.getElementById('sentText').value.trim();
+            if (!text) return alert('Veuillez entrer du texte pour l\'analyse');
+            document.getElementById('sentBtn').disabled = true;
+            try {
+                const resp = await fetch('/api/sentiment', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error||'Erreur sentiment');
+                const r = document.getElementById('sentResult');
+                r.style.display = 'block';
+                r.innerHTML = `<div class="result-card"><h3>Résultat</h3><div class="result-text">${data.label}: ${data.score}</div></div>`;
+            } catch (e) { alert(e.message); }
+            document.getElementById('sentBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>

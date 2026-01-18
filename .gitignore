@@ -1,0 +1,15 @@
+# Environnements Python
+venv/
+.env/
+
+# Fichiers générés
+outputs/
+*.mp4
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,26 @@
+# Framework Web
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Deep Learning - Version compatible Python 3.13
+torch
+torchaudio
+
+# Transformers - Version plus récente
+transformers>=4.40.0
+
+# Audio Processing
+librosa>=0.10.1
+soundfile>=0.12.1
+audioread>=3.0.1
+numpy<2.0.0
+
+# NLP - Utiliser pre-built wheel
+--only-binary sentencepiece
+sentencepiece>=0.2.0
+
+# Utilitaires
+scipy>=1.11.0
+
+# CORS
+flask-cors==4.0.0

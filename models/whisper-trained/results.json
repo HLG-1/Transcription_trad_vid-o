@@ -1,0 +1,20 @@
+{
+  "config": {
+    "model": "openai/whisper-tiny",
+    "train_size": 500,
+    "val_size": 50,
+    "test_size": 50,
+    "batch_size": 4,
+    "epochs": 2,
+    "gradient_checkpoint": false,
+    "fp16": true
+  },
+  "validation": {
+    "wer": 1.2344740177439797,
+    "cer": 1.0199352105656616
+  },
+  "test": {
+    "wer": 0.6153005464480874,
+    "cer": 0.5060777957860616
+  }
+}
